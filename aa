@@ -65,9 +65,16 @@ case_poule:
 	
 case_renard:
 	li t0 'r'
-	bne t0, a0, case_erreur		# Si a0 != 'r', verifier le prochain caractere
-	# bgtz s2, diminuer_chien
+	bne t0, a0, case_chien		# Si a0 != 'r', verifier le prochain caractere
+	bgtz s2, diminuer_chien
 	bgtz s1, diminuer_poule		# S'il y a des poules couvrant des oeufs
+	mv t1, s5
+	j loop
+
+case_chien:
+	li t0, 'c'
+	bne t0, a0, case_erreur		# Si a0 != 'c', verifier le prochain caractere	
+	add s2, s2, t1
 	mv t1, s5
 	j loop
 
@@ -86,6 +93,12 @@ ajouter_poule:
 	bltz s0, reinitialiser_oeuf	# Si le nombre d'oeuf est negatif, reinitialiser oeuf
 	mv t1, s5
 	j loop
+	
+diminuer_chien:
+	sub s2, s2, t1
+	bltz s2, reinitialiser_chien
+	mv t1, s5
+	j loop
 
 diminuer_poule:
 	sub s1, s1, t1
@@ -101,6 +114,15 @@ reinitialiser_poule:
 	add s0, s0, s1			# Ajouter la valeur (negative) du nombre de poules aux oeufs
 					# La valeur courante de chiffre ne nous interesse pas
 	sub s1, s1, s1
+	mv t1, s5
+	j loop
+
+reinitialiser_chien:
+	
+	add s1, s1, s2 # A ce stade, la valeur de chien est negative, puisqu'il y a plus de renard courant que de chien
+			# Donc, s'il y a
+	sub s0, s0, s2
+	sub s2, s2, s2
 	mv t1, s5
 	j loop
 	
