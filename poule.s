@@ -22,12 +22,11 @@
 	
 	li s0, 0			# compteur d'oeufs
 	li s1, 0			# compteur de poules
-	li s2, 0			# compteur de renards
-	li s3, 0			# compteur de chiens
-	li s4, 0			# compteur de vers	
+	li s2, 0			# compteur de chiens
+	li s3, 0			# compteur de vers	
 	li t1, 1			# Initialiser le chiffre courant a 1,
 					# pour gerer les cas multiple et les cas non multiple
-  	li s5,  1			# Variable pour reinitialiser t1
+  	li s4,  1			# Variable pour reinitialiser t1
 
 loop:
 	li a7, ReadChar
@@ -61,7 +60,7 @@ case_poule:
 	bne t0, a0, case_renard		# Si a0 != 'p', verifier le prochain caractere
 	bgtz s3, diminuer_ver
 	bgtz s0, diminuer_oeuf
-	mv t1, s5			# Reinitialiser t1  a 1
+	mv t1, s4			# Reinitialiser t1  a 1
 	j loop
 	
 case_renard:
@@ -69,33 +68,33 @@ case_renard:
 	bne t0, a0, case_chien		# Si a0 != 'r', verifier le prochain caractere
 	bgtz s2, diminuer_chien
 	bgtz s1, diminuer_poule		# S'il y a des poules couvrant des oeufs
-	mv t1, s5
+	mv t1, s4
 	j loop
 
 case_chien:
 	li t0, 'c'
 	bne t0, a0, case_ver		# Si a0 != 'c', verifier le prochain caractere	
 	add s2, s2, t1
-	mv t1, s5
+	mv t1, s4
 	j loop
 	
 case_ver:
 	li t0, 'v'
 	bne t0, a0, case_erreur		# Si a0 != 'v', affiche erreur
-	add s3, s3, t1			# incrementer le nombre de cartes de ver au compteur de ver
-	mv t1, s5
+	add s3, s3, t1			# Incrementer le nombre de cartes de ver au compteur de ver
+	mv t1, s4
 	j loop
 
 ajouter_oeuf:
 	add s0, s0, t1			# Incrementer le nombre d'oeufs
 	bltz s1, reinitialiser_poule 
-	mv t1, s5
+	mv t1, s4			# Reinitialiser le chiffre courant a 1
 	j loop   
 
 ajouter_poule:
 	add s1, s1, t1			# Incrementer le nombre de poules
 	bltz s0, reinitialiser_oeuf	# Si le nombre d'oeuf est negatif, reinitialiser oeuf
-	mv t1, s5
+	mv t1, s4
 	j loop
 	
 diminuer_oeuf:
@@ -109,42 +108,40 @@ diminuer_poule:
 diminuer_chien:
 	sub s2, s2, t1
 	bltz s2, reinitialiser_chien
-	mv t1, s5
+	mv t1, s4
 	j loop
 
 diminuer_ver:
 	sub s3, s3, t1
 	bltz s3, reinitialiser_ver
-	mv t1, s5
+	mv t1, s4
 	j loop  
 
 reinitialiser_oeuf:
 	add s1, s0, s1			# Tenir compte seul des poules qui couvrent des oeufs
 	sub s0, s0, s0
-	mv t1, s5
+	mv t1, s4
 	j loop
 
 reinitialiser_poule:
 	add s0, s0, s1			# Ajouter la valeur (negative) du nombre de poules aux oeufs
 					# La valeur courante de chiffre ne nous interesse pas
 	sub s1, s1, s1
-	mv t1, s5
+	mv t1, s4
 	j loop
 
 reinitialiser_chien:
-	
-	add s1, s1, s2 # A ce stade, la valeur de chien est negative, puisqu'il y a plus de renard courant que de chien
-			# Donc, s'il y a
-	sub s0, s0, s2
+	add s1, s1, s2 		# A ce stade, la valeur de chien est negative, puisqu'il y a plus de renard courant que de chien
+	sub s0, s0, s2		
 	sub s2, s2, s2
-	mv t1, s5
+	mv t1, s4
 	j loop
 	
 reinitialiser_ver:
 	add s0, s0, s3			# Si le nombre de ver est negatif, on additionne aux oeuf
 	sub s1, s1, s3 
 	sub s3, s3, s3
-	mv t1, s5
+	mv t1, s4
 	j loop
 
 	
@@ -173,7 +170,7 @@ affiche_oeuf:
 	
 	bgtz t1, affiche_oeuf # Tant qu'on a besoin d'afficher les oeufs
 	
-	mv t1, s5
+	mv t1, s4
 	j loop
 
  
