@@ -59,6 +59,7 @@ case_oeuf:
 case_poule:
 	li t0, 'p'
 	bne t0, a0, case_renard		# Si a0 != 'p', verifier le prochain caractere
+	bgtz s3, diminuer_ver
 	bgtz s0, diminuer_oeuf
 	mv t1, s5			# Reinitialiser t1  a 1
 	j loop
@@ -73,8 +74,15 @@ case_renard:
 
 case_chien:
 	li t0, 'c'
-	bne t0, a0, case_erreur		# Si a0 != 'c', verifier le prochain caractere	
+	bne t0, a0, case_ver		# Si a0 != 'c', verifier le prochain caractere	
 	add s2, s2, t1
+	mv t1, s5
+	j loop
+	
+case_ver:
+	li t0, 'v'
+	bne t0, a0, case_erreur		# Si a0 != 'v', affiche erreur
+	add s3, s3, t1			# incrementer le nombre de cartes de ver au compteur de ver
 	mv t1, s5
 	j loop
 
@@ -84,15 +92,19 @@ ajouter_oeuf:
 	mv t1, s5
 	j loop   
 
-diminuer_oeuf:
-	sub s0, s0, t1			# Diminuer le nombre d'oeuf avec le chiffre courant
-	j ajouter_poule
-
 ajouter_poule:
 	add s1, s1, t1			# Incrementer le nombre de poules
 	bltz s0, reinitialiser_oeuf	# Si le nombre d'oeuf est negatif, reinitialiser oeuf
 	mv t1, s5
 	j loop
+	
+diminuer_oeuf:
+	sub s0, s0, t1			# Diminuer le nombre d'oeuf avec le chiffre courant
+	j ajouter_poule
+
+diminuer_poule:
+	sub s1, s1, t1
+	j ajouter_oeuf
 	
 diminuer_chien:
 	sub s2, s2, t1
@@ -100,9 +112,11 @@ diminuer_chien:
 	mv t1, s5
 	j loop
 
-diminuer_poule:
-	sub s1, s1, t1
-	j ajouter_oeuf  
+diminuer_ver:
+	sub s3, s3, t1
+	bltz s3, reinitialiser_ver
+	mv t1, s5
+	j loop  
 
 reinitialiser_oeuf:
 	add s1, s0, s1			# Tenir compte seul des poules qui couvrent des oeufs
@@ -125,6 +139,14 @@ reinitialiser_chien:
 	sub s2, s2, s2
 	mv t1, s5
 	j loop
+	
+reinitialiser_ver:
+	add s0, s0, s3			# Si le nombre de ver est negatif, on additionne aux oeuf
+	sub s1, s1, s3 
+	sub s3, s3, s3
+	mv t1, s5
+	j loop
+
 	
 case_erreur:
 	li a7, PrintChar
