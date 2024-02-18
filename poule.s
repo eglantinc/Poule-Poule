@@ -63,8 +63,8 @@ case_oeuf:
 case_poule:
 	li t0, 'p'
 	bne t0, a0, case_renard		# Si a0 != 'p', verifier le prochain caractère
-	bgtz s3, diminuer_ver
-	bgtz s0, diminuer_oeuf
+	bgtz s3, diminuer_ver		# S'il y a des vers dans le jeu, les diminuer
+	bgtz s0, diminuer_oeuf		# Sinon s'il y a des oeufs, diminuer
 	mv t1, s4			# Réinitialiser t1 a 1
 	j loop
 	
@@ -72,32 +72,32 @@ case_renard:
 	li t0 'r'
 	bne t0, a0, case_chien		# Si a0 != 'r', verifier le prochain caractère
 	bgtz s2, diminuer_chien
-	bgtz s1, diminuer_poule		# S'il y a des poules couvrant des oeufs
+	bgtz s1, diminuer_poule		# S'il y a des poules couvrant des oeufs, decrementer les cartes poule
 	mv t1, s4
 	j loop
 
 case_chien:
 	li t0, 'c'
 	bne t0, a0, case_ver		# Si a0 != 'c', verifier le prochain caractère	
-	add s2, s2, t1
+	add s2, s2, t1			# Incrémenter le nombre de cartes de chien
 	mv t1, s4
 	j loop
 	
 case_ver:
 	li t0, 'v'
 	bne t0, a0, case_erreur		# Si a0 != 'v', affiche erreur
-	add s3, s3, t1			# Incrémenter le nombre de cartes de ver au compteur de vers
+	add s3, s3, t1			# Incrémenter le nombre de cartes de ver
 	mv t1, s4
 	j loop
 
 ajouter_oeuf:
-	add s0, s0, t1			# Incrémenter le nombre d'oeufs
+	add s0, s0, t1			# Incrémenter le nombre d'oeufs avec le chiffre courant
 	bltz s1, reinitialiser_poule 
 	mv t1, s4			# Réinitialiser le chiffre courant a 1
 	j loop   
 
 ajouter_poule:
-	add s1, s1, t1			# Incrémenter le nombre de poules
+	add s1, s1, t1			# Incrémenter le nombre de poules avec le chiffre courant
 	bltz s0, reinitialiser_oeuf	# Si le nombre d'oeufs est négatif, réinitialiser oeuf
 	mv t1, s4
 	j loop
@@ -124,33 +124,32 @@ diminuer_ver:
 
 reinitialiser_oeuf:
 	add s1, s0, s1			# Tenir compte seulement des poules qui couvrent des oeufs
-	sub s0, s0, s0
+	sub s0, s0, s0			# Reinitialiser le nombre d'oeufs a 0
 	mv t1, s4
 	j loop
 
 reinitialiser_poule:
-	# Ajouter la valeur (négative) du nombre de poules aux oeufs
+	# Ajuster le nombre d'oeuf, enlever les excédents engendrés par t1
 	add s0, s0, s1			
-	sub s1, s1, s1
+	sub s1, s1, s1			# Réinitialiser le nombre de poules à 0
 	mv t1, s4
 	j loop
 
 reinitialiser_chien:
-	add s1, s1, s2 		
-	sub s0, s0, s2		
-	sub s2, s2, s2
-	bltz s1, diminuer_poule
+	add s1, s1, s2			# Ajuster le nombre de poules, enlever les excédents engendrés par t1
+	sub s0, s0, s2			# Ajuster le nombre d'oeufs, gérer les excédents
+	sub s2, s2, s2			# Réinitialise à 0
+	bltz s1, diminuer_poule		# Si le nombre de poule est négatif, ajuster la valeur
 	mv t1, s4
 	j loop
 	
 reinitialiser_ver:
-	add s0, s0, s3			# Ajuster le nombre d'oeufs
-	sub s1, s1, s3 			# Le nombre de poules courant
-	sub s3, s3, s3
-	bltz s0, diminuer_oeuf		# Si le nombre d'oeuf est negatif
+	add s0, s0, s3			
+	sub s1, s1, s3 			# Ajuster le nombre de poules total apres diminution
+	sub s3, s3, s3			
+	bltz s0, diminuer_oeuf		
 	mv t1, s4
 	j loop
-
  					
 case_erreur:
 	li a7, PrintChar
